@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>語彙 – センスワード保管庫</title>
+  <meta name="description" content="ひらめいた“センスの良い単語”を、美しく・超高性能にコレクションできる個人用ワード保管サイト。「語彙」としていつでも取り出せるように保存。" />
+  <meta name="theme-color" content="#050816" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">語</div>
+        <div>
+          <h1>語彙</h1>
+          <p class="brand-subtitle">“センスいい言葉”を、最高のかたちで保管。</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-button" id="themeToggle" title="テーマ切り替え (L)">
+          <span class="icon">🌙</span>
+        </button>
+        <button class="icon-button" id="compactToggle" title="コンパクト表示 (C)">
+          <span class="icon">≣</span>
+        </button>
+        <button class="primary-button" id="addWordButton">
+          ＋ 新しいワード
+        </button>
+      </div>
+    </header>
+
+    <section class="quick-stats" aria-label="統計情報">
+      <div class="stat-card">
+        <div class="stat-label">総ワード数</div>
+        <div class="stat-value" id="totalWords">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">お気に入り</div>
+        <div class="stat-value" id="favoriteCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">タグ数</div>
+        <div class="stat-value" id="tagCount">0</div>
+      </div>
+      <div class="stat-card stat-accent" id="randomWordCard">
+        <div class="stat-label">今日のセンスワード</div>
+        <div class="stat-value random-word-main" id="randomWordMain">—</div>
+        <div class="random-word-sub" id="randomWordSub">まだ登録がありません</div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="検索とフィルタ">
+      <div class="search-group">
+        <div class="field">
+          <label for="searchInput">検索</label>
+          <div class="search-input-wrapper">
+            <span class="search-icon">⌕</span>
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="ワード・意味・タグ・メモで検索 (Ctrl + K)"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label for="tagFilter">タグ</label>
+          <select id="tagFilter">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sortSelect">並び替え</label>
+          <select id="sortSelect">
+            <option value="created-desc">新しい順</option>
+            <option value="created-asc">古い順</option>
+            <option value="word-asc">ワード名 A→Z</option>
+            <option value="word-desc">ワード名 Z→A</option>
+            <option value="favorite-desc">お気に入り優先</option>
+            <option value="rating-desc">評価が高い順</option>
+          </select>
+        </div>
+      </div>
+      <div class="control-buttons">
+        <button class="ghost-button" id="clearFiltersButton">フィルタをリセット</button>
+        <button class="ghost-button" id="shuffleButton">ランダム表示</button>
+        <div class="divider"></div>
+        <button class="ghost-button" id="exportButton">エクスポート</button>
+        <button class="ghost-button" id="importButton">インポート</button>
+        <input type="file" id="importFileInput" accept="application/json" hidden />
+      </div>
+    </section>
+
+    <main class="word-layout">
+      <aside class="sidebar" aria-label="タグ一覧">
+        <div class="sidebar-header">
+          <h2>タグ</h2>
+          <button class="ghost-button small" id="toggleSidebarButton">閉じる</button>
+        </div>
+        <ul class="tag-list" id="tagList">
+          <!-- タグ一覧がここに表示される -->
+        </ul>
+      </aside>
+
+      <section class="word-section" aria-label="ワード一覧">
+        <div class="word-section-header">
+          <h2>ワード一覧</h2>
+          <span class="result-count" id="resultCount">0 件</span>
+        </div>
+        <div class="word-empty" id="emptyState">
+          <p>まだワードがありません。</p>
+          <p>ひらめいた“いい感じの単語”を、右上の「＋ 新しいワード」から登録してみてください。</p>
+        </div>
+        <div class="word-grid" id="wordGrid">
+          <!-- ワードカードがここに表示される -->
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div class="shortcuts">
+        <span>⌨ ショートカット: </span>
+        <span><kbd>N</kbd> 新規</span>
+        <span><kbd>Ctrl</kbd> + <kbd>K</kbd> 検索フォーカス</span>
+        <span><kbd>L</kbd> テーマ</span>
+        <span><kbd>C</kbd> コンパクト</span>
+      </div>
+      <div class="footer-right">
+        <span class="mono">データはブラウザにのみ保存（localStorage）</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ワード編集モーダル -->
+  <div class="modal-backdrop" id="wordModalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="wordModalTitle">
+      <div class="modal-header">
+        <h2 id="wordModalTitle">ワードを追加</h2>
+        <button class="icon-button" id="closeModalButton" aria-label="閉じる">
+          ✕
+        </button>
+      </div>
+
+      <form id="wordForm">
+        <input type="hidden" id="wordId" />
+
+        <div class="field-group">
+          <div class="field">
+            <label for="wordInput">ワード <span class="required">*</span></label>
+            <input id="wordInput" type="text" placeholder="例: エモーショナル, epiphany, ineffable ..." required />
+          </div>
+
+          <div class="field">
+            <label for="readingInput">読み / 発音</label>
+            <input id="readingInput" type="text" placeholder="例: えもーしょなる / イニェファブル" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field">
+            <label for="languageInput">言語</label>
+            <input id="languageInput" type="text" placeholder="例: 日本語, English, Français ..." />
+          </div>
+
+          <div class="field">
+            <label for="categoryInput">カテゴリ</label>
+            <input id="categoryInput" type="text" placeholder="例: ポジティブ, 哲学, 造語 ..." />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="meaningInput">意味 / ニュアンス</label>
+          <textarea id="meaningInput" rows="3" placeholder="自分なりの解釈やニュアンスを書いておくと、あとで見返したときにニヤニヤできます。"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="exampleInput">用例 / フレーズ</label>
+          <textarea id="exampleInput" rows="2" placeholder="そのワードを使った文章や、しっくりきたフレーズなど。"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="tagsInput">タグ <span class="hint">カンマ区切りで複数指定可</span></label>
+          <input id="tagsInput" type="text" placeholder="例: 夜, 静けさ, 造語" />
+        </div>
+
+        <div class="field-group align-center">
+          <div class="field">
+            <label>お気に入り</label>
+            <button type="button" class="favorite-toggle" id="favoriteToggle" aria-pressed="false">
+              ★ とても好き
+            </button>
+          </div>
+
+          <div class="field">
+            <label for="ratingInput">“センス”評価</label>
+            <input id="ratingInput" type="range" min="0" max="5" step="1" value="0" />
+            <div class="rating-labels">
+              <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="noteInput">メモ</label>
+          <textarea id="noteInput" rows="2" placeholder="ひらめいたときのシチュエーション、誰といたか、どんな気持ちだったか…など自由に。"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <div class="left">
+            <button type="button" class="ghost-button danger" id="deleteWordButton">
+              削除
+            </button>
+          </div>
+          <div class="right">
+            <button type="button" class="ghost-button" id="cancelButton">キャンセル</button>
+            <button type="submit" class="primary-button">保存</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <template id="wordCardTemplate">
+    <article class="word-card">
+      <header class="word-card-header">
+        <div class="word-main">
+          <h3 class="word-title"></h3>
+          <p class="word-reading"></p>
+        </div>
+        <button class="icon-button favorite-button" title="お気に入り">
+          ☆
+        </button>
+      </header>
+      <div class="word-chip-row">
+        <span class="word-chip word-language"></span>
+        <span class="word-chip word-category"></span>
+      </div>
+      <p class="word-meaning"></p>
+      <p class="word-example"></p>
+      <div class="word-tags"></div>
+      <div class="word-meta">
+        <span class="word-rating"></span>
+        <span class="word-date"></span>
+      </div>
+      <div class="word-footer">
+        <button class="ghost-button small edit-button">編集</button>
+        <button class="ghost-button small duplicate-button">複製</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("service-worker.js")
+          .catch((err) => console.error("ServiceWorker registration failed:", err));
+      });
+    }
+  </script>
+</body>
+</html>
